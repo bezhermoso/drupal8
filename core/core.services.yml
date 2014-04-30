@@ -234,7 +234,7 @@ services:
     parent: default_plugin_manager
   plugin.manager.action:
     class: Drupal\Core\Action\ActionManager
-    arguments: ['@container.namespaces']
+    arguments: ['@container.namespaces', '@cache.discovery', '@language_manager', '@module_handler']
   plugin.manager.menu.local_action:
     class: Drupal\Core\Menu\LocalActionManager
     arguments: ['@controller_resolver', '@request_stack', '@router.route_provider', '@module_handler', '@cache.discovery', '@language_manager', '@access_manager', '@current_user']
@@ -364,6 +364,9 @@ services:
   entity.query.sql:
     class: Drupal\Core\Entity\Query\Sql\QueryFactory
     arguments: ['@database']
+  entity.query.keyvalue:
+    class: Drupal\Core\Entity\KeyValueStore\Query\QueryFactory
+    arguments: ['@keyvalue']
   router.dumper:
     class: Drupal\Core\Routing\MatcherDumper
     arguments: ['@database', '@state']
@@ -413,6 +416,12 @@ services:
     tags:
       - { name: paramconverter }
     arguments: ['@entity.manager']
+  paramconverter.configentity_admin:
+    class: Drupal\Core\ParamConverter\AdminPathConfigEntityConverter
+    tags:
+      # Use a higher priority than EntityConverter, see the class for details.
+      - { name: paramconverter, priority: 5 }
+    arguments: ['@entity.manager', '@config.factory', '@router.admin_context']
   route_subscriber.module:
     class: Drupal\Core\EventSubscriber\ModuleRouteSubscriber
     tags:
